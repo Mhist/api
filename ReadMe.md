@@ -177,11 +177,11 @@ app.listen(APP_PORT,()=>{
 
 # 五、目录结构优化
 
-将http服务和app业务进行拆分
+## 1.将http服务和app业务进行拆分
 
 创建目录**src/app/index.js**
 
-```
+```js
 const Koa = require('koa');
 const app = new Koa();
 
@@ -192,7 +192,7 @@ module.exports = app
 
 改写main.js
 
-```
+```js
 
 const {APP_PORT} = require('./config/config.default')
 const app = require('../src/app/index')
@@ -201,5 +201,31 @@ app.listen(APP_PORT,()=>{
 });
 ```
 
+## 2.将路由与控制器进行拆分
 
+```js
+class userController {
+    async register(ctx, next){
+        ctx.body = '用户注册成功'
+    }
+    async login(ctx, next){
+        ctx.body = '用户登录成功'
+    }
+}
+
+module.exports = new userController
+```
+
+```js
+
+const Router = require('koa-router')
+const router = new Router({prefix:'/users'})
+const {register,login} = require('../controller/user.controller')
+// 注册接口
+router.post("/register",register)
+// 登录接口
+router.post("/login",login)
+
+module.exports = router
+```
 
