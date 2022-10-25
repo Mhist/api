@@ -53,7 +53,7 @@ app.listen(3000,()=>{
 ## 1.自动重启
 
 ```bash
-npm install nodemon
+npm install nodemon -D
 ```
 
 编写package.json
@@ -229,3 +229,363 @@ router.post("/login",login)
 module.exports = router
 ```
 
+# 六.解析body
+
+```bash
+npm i koa-body
+```
+
+[koa-body - npm (npmjs.com)](https://www.npmjs.com/package/koa-body)
+
+```js
+// 官方用法截取：
+const Koa = require('koa');
+const koaBody = require('koa-body');
+
+const app = new Koa();
+
+app.use(koaBody());
+app.use(ctx => {
+  ctx.body = `Request Body: ${JSON.stringify(ctx.request.body)}`;
+});
+
+app.listen(3000);
+```
+
+```js
+class userController {
+    async register(ctx, next){
+        
+        // 获取请求参数
+        console.log(ctx.request.body)
+        // 操作数据库----抽离service层
+        
+        // 返回对应的结果
+        ctx.body = ctx.request.body
+    }
+    async login(ctx, next){
+        ctx.body = '用户登录成功'
+    }
+}
+
+module.exports = new userController
+```
+
+**新建user.service.js**
+
+```js
+class userService {
+    async createUser(userName,password){
+        // to do:写入数据库
+        return '写入数据库成功'
+    }
+}
+module.exports = new userService()
+```
+
+```js
+const {createUser} = require("../service/user.service")
+class userController {
+    async register(ctx, next){
+        
+        // 获取请求参数
+        console.log(ctx.request.body)
+        const {userName,password} = ctx.request.body
+        // 操作数据库
+        const res = await createUser(userName,password)
+        // 返回对应的结果
+        ctx.body = res
+    }
+    async login(ctx, next){
+        ctx.body = '用户登录成功'
+    }
+}
+
+module.exports = new userController
+```
+
+# 七、sequelize
+
+## 1.sequelize简介
+
+Sequelize 是一个基于 promise 的 Node.js [ORM](https://en.wikipedia.org/wiki/Object-relational_mapping), 目前支持 [Postgres](https://en.wikipedia.org/wiki/PostgreSQL), [MySQL](https://en.wikipedia.org/wiki/MySQL), [MariaDB](https://en.wikipedia.org/wiki/MariaDB), [SQLite](https://en.wikipedia.org/wiki/SQLite) 以及 [Microsoft SQL Server](https://en.wikipedia.org/wiki/Microsoft_SQL_Server). 它具有强大的事务支持, 关联关系, 预读和延迟加载,读取复制等功能。
+
+[Sequelize 简介 | Sequelize 中文文档 | Sequelize 中文网](https://www.sequelize.cn/)
+
+
+
+> **对象关系映射**（英语：**Object Relational Mapping**，简称**ORM**，或**O/RM**，或**O/R mapping**），是一种程序设计技术，用于实现[面向对象](https://baike.baidu.com/item/面向对象?fromModule=lemma_inlink)编程语言里不同[类型系统](https://baike.baidu.com/item/类型系统/4273825?fromModule=lemma_inlink)的[数据](https://baike.baidu.com/item/数据/5947370?fromModule=lemma_inlink)之间的转换。从效果上说，它其实是创建了一个可在[编程语言](https://baike.baidu.com/item/编程语言/9845131?fromModule=lemma_inlink)里使用的“虚拟对象数据库”。如今已有很多免费和付费的ORM产品，而有些程序员更倾向于创建自己的ORM工具。
+>
+> 
+
+* 数据表映射（对应）一个类
+
+* 数据表中的数据行（记录）对应一个对象
+
+* 数据表字段对应对象的属性
+
+* 数据表的操作对应对象的方法
+
+  
+  
+##  2.安装
+
+  ```bash
+  # 使用 npm
+  npm i sequelize # 这将安装最新版本的 Sequelize
+  # 使用 yarn
+  yarn add sequelize
+  ```
+
+  你还必须手动为所选数据库安装驱动程序：
+
+  ```bash
+  # 使用 npm
+  npm i pg pg-hstore # PostgreSQL
+  npm i mysql2 # MySQL
+  npm i mariadb # MariaDB
+  npm i sqlite3 # SQLite
+  npm i tedious # Microsoft SQL Server
+  npm i ibm_db # DB2
+  # 使用 yarn
+  yarn add pg pg-hstore # PostgreSQL
+  yarn add mysql2 # MySQL
+  yarn add mariadb # MariaDB
+  yarn add sqlite3 # SQLite
+  yarn add tedious # Microsoft SQL Server
+  yarn add ibm_db # DB2
+  ```
+
+
+## 3.连接
+  ```js
+  const { Sequelize } = require('sequelize');
+  
+  // 方法 1: 传递一个连接 URI
+  const sequelize = new Sequelize('sqlite::memory:') // Sqlite 示例
+  const sequelize = new Sequelize('postgres://user:pass@example.com:5432/dbname') // Postgres 示例
+  
+  // 方法 2: 分别传递参数 (sqlite)
+  const sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: 'path/to/database.sqlite'
+  });
+  
+  // 方法 3: 分别传递参数 (其它数据库)
+  const sequelize = new Sequelize('database', 'username', 'password', {
+    host: 'localhost',
+    dialect: /* 选择 'mysql' | 'mariadb' | 'postgres' | 'mssql' 其一 */
+  });
+  ```
+
+  
+
+```js
+const { Sequelize } = require('sequelize');
+const {MYSQL_DB,MYSQL_USER,MYSQL_PASSWORD,MYSQL_HOST,MYSQL_PORT} = require('../config/config.default')
+// 方法 3: 分别传递参数 (其它数据库)
+const sequelize = new Sequelize(MYSQL_DB, MYSQL_USER, MYSQL_PASSWORD, {
+    host: MYSQL_HOST,
+    port:MYSQL_PORT,
+    dialect: 'mysql',/* 选择 'mysql' | 'mariadb' | 'postgres' | 'mssql' 其一 */
+    timeZone:'+8:00'
+  });
+
+ sequelize.authenticate()
+          .then(()=>{
+            console.log("连接数据库成功")
+          })
+          .catch(err =>{
+            console.log("连接数据库失败",err)
+          })
+
+module.exports = sequelize
+```
+
+```.env
+APP_PORT=8000
+
+MYSQL_HOST=localhost
+
+MYSQL_PORT=3306
+
+MYSQL_USER=root
+
+MYSQL_PASSWORD=admin123
+
+MYSQL_DB=husi
+```
+
+## 4.逻辑处理分层
+
+### * model层：
+
+```js
+const { DataTypes } = require('sequelize');
+const sequelize = require("../db/seq");
+
+const User = sequelize.define('husi_user', {
+  // 在这里定义模型属性
+  // id会被sequelize自动创建、管理
+  userName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    comment:'用户名 唯一'
+  },
+  password: {
+    type: DataTypes.CHAR(64),
+    allowNull: false,
+    comment:'密码'
+  },
+  isAdmin: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    comment:'是否是管理员 0 不是管理员（默认）  1 是管理员',
+    defaultValue: 0
+  },
+
+}, {
+  // 这是其他模型参数
+});
+
+// `sequelize.define` 会返回模型
+console.log(User === sequelize.models.User); // true
+
+
+// User.sync({ force: true });
+// console.log("用户模型表刚刚(重新)创建！");
+
+module.exports = User
+```
+
+### * controller层返回
+
+```js
+const {createUser} = require("../service/user.service")
+class userController {
+    async register(ctx, next){
+        
+        // 获取请求参数
+        console.log(ctx.request.body)
+        const {userName,password} = ctx.request.body
+        // 操作数据库
+        const res = await createUser(userName,password)
+        // 返回对应的结果
+        ctx.body = {
+            code: 0,
+            message: "用户注册成功",
+            result:{
+                id: res.id,
+                userName: res.userName
+            }
+        }
+    }
+    async login(ctx, next){
+        ctx.body = '用户登录成功'
+    }
+}
+
+module.exports = new userController
+```
+
+### * service层
+
+```js
+const User = require('../model/user.model');
+
+class userService {
+    async createUser(userName, password) {
+         // to do:写入数据库
+        // 创建一个新用户
+        const res = await User.create({
+            userName: userName,
+            password: password,
+        });
+        console.log(res);
+       
+        return res.dataValues;
+    }
+}
+module.exports = new userService();
+```
+
+# 八、错误处理
+
+## 1.处理函数
+
+app下新建errHandler.js
+
+```js
+module.exports = (err, ctx) => {
+    let status = 500;
+    switch (err.code) {
+        case '10001':
+            status = 400;
+        case '10002':
+            status = 409;
+        case '10003':
+                status = 500;
+        break
+        default:
+            status = 500
+    }
+    ctx.status = status
+    ctx.body = err;
+};
+```
+
+## 2.错误类型
+
+src下新建constant文件夹、用户存储错误类型信息
+
+```js
+module.exports = {
+    userFormateError:{
+        code:'10001',
+        message:'用户名或者密码为空',
+        result:''
+    },
+
+    hasUserNameExistError:{
+        code:'10002',
+        message:'用户名已经存在',
+        result:''
+    },
+
+    userRegisterError:{
+        code:'10003',
+        message:'用户注册错误',
+        result:''
+    }
+
+
+}
+```
+
+## 3.统一处理
+
+app/index.js统一处理错误
+
+```js
+const Koa = require('koa');
+const app = new Koa();
+const koaBody = require('koa-body');
+app.use(koaBody());// 需要在最上层
+const userRouter = require('../router/user.route')
+app.use(userRouter.routes());
+// 处理错误的函数
+const errHandler = require('./errHandler')
+
+
+
+
+// 统一处理错误
+app.on('error',errHandler)
+
+module.exports = app
+```
+
+# 九、加密
+
+在将密码保存到数据库之前、要对密码进行加密处理
