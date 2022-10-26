@@ -6,11 +6,16 @@ module.exports = (err, ctx) => {
         case '10002':
             status = 409;
         case '10003':
-                status = 500;
-        break
+            status = 500;
+        case '10004':
+            status = 409;
+        case '10005':
+            status = 500;
+        break;
+
         default:
-            status = 500
+            status = 500;
     }
-    ctx.status = status
+    ctx.status = status;
     ctx.body = err;
 };
