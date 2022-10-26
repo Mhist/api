@@ -1,11 +1,27 @@
+const path = require('path')
 const Koa = require('koa');
 const app = new Koa();
 const koaBody = require('koa-body');
+const koaStatic = require('koa-static');
+app.use(koaBody(
+    {
+        multipart:true,
+        // 配置选项不推荐使用相对路径
+        // 在option里的相对路径，不是相对的当前文件，相对process.cwd()
+        formidable:{
+            uploadDir:path.join(__dirname,'../upload'),
+            keepExtensions:true,
+        }
+    }
+));// 需要在最上层
+console.log(path.join(__dirname,'../upload'),"*****************")//D:\api\src\upload *****************
+app.use(koaStatic(path.join(__dirname,'../upload')))
 // 处理错误的函数
 const errHandler = require('./errHandler')
 const router = require('../router/index')
-app.use(koaBody());// 需要在最上层
-app.use(router.routes());
+
+app.use(router.routes())
+app.use(router.allowedMethods())
 // const userRouter = require('../router/user.route')
 // app.use(userRouter.routes());
 // const goodRouter = require('../router/good.route')

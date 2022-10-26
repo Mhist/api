@@ -588,4 +588,450 @@ module.exports = app
 
 # 九、加密
 
-在将密码保存到数据库之前、要对密码进行加密处理
+在将密码保存到数据库之前、要对密码进行加密处理，
+
+加盐的加密方式：**bcrypt.js**    零依赖
+
+[bcryptjs - npm (npmjs.com)](https://www.npmjs.com/package/bcryptjs)
+
+## 1.安装bcryptjs
+
+```bash
+npm i bcryptjs
+```
+
+## 2.编写加密中间件
+
+```js
+const verifyLogin = async (ctx, next) => {
+    const { userName, password } = ctx.request.body;
+    try {
+        // 1.判断用户是否存在，不存在就报错
+        const res = await getUserInfo({ userName });
+        console.log(res, '***************');
+     
+        if (!res) {
+            console.log('用户名不存在', { userName });
+            ctx.app.emit('error', userDoesNotExistError, ctx);
+            return;
+        }
+        // 2.用户存在，比对密码是否匹配，不匹配报错
+        // 明文密码解密
+        let isMatch = bcrypt.compareSync(password, res.password)
+        if (!isMatch) {
+            console.error('密码不匹配');
+            ctx.app.emit('error', invalidPasswordError, ctx);
+            return
+        }
+    } catch (error) {
+        console.log(error)
+        console.error('用户登录错误');
+        ctx.app.emit('error', userLoginError, ctx);
+        return;
+    }
+
+    await next();
+};
+```
+
+## 3.在router 中使用：
+
+```js
+// 登录接口
+router.post("/login",userValidator,verifyLogin,login)
+```
+
+# 十、用户的认证
+
+登录成功后、给用户颁发token令牌，用户在以后的每一次请求中、携带该令牌、在服务端对令牌进行有效性校验。
+
+
+
+## 1.JWT(json web token)的构成
+
+第一部分我们称它为头部（header)
+
+,第二部分我们称其为载荷（payload, 类似于飞机上承载的物品)，
+
+第三部分是签证（signature).
+
+
+
+## 2.安装 jsonwebtoken
+
+```
+npm i jsonwebtoken
+```
+
+
+
+## 3.使用jwt生成token
+
+并在登录成功后作为结果返回。
+
+```js
+ // 操作数据库
+        try {
+            // 从返回结果中剔除password字段，剩下的属性放到新的对象resUser中
+            const { password, ...res } = await getUserInfo({ userName });
+            console.log(res)//{ id: 27, userName: 'sss5', isAdmin: false }
+            // 返回对应的结果
+            ctx.body = {
+                code: 0,
+                message: '用户登录成功',
+                result: {
+                    token: jwt.sign(res, JWT_SECRET, { expiresIn: '1d' }),
+                },
+            };
+        } catch (error) {
+            console.log('用户登录失败', error);
+            ctx.app.emit('error', userLoginError, ctx);
+        }
+```
+
+![](https://files.catbox.moe/760hiu.png)
+
+## 4.token值：
+
+```js
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjcsInVzZXJOYW1lIjoic3NzNSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE2NjY3MTA2OTIsImV4cCI6MTY2Njc5NzA5Mn0.pfebYFF4T-JRjxB4M3L8CZ5AAnhZK5tnvVDgkkzUzYk
+```
+
+
+
+# 十一、修改密码
+
+## 1.新建路由
+
+
+
+
+
+
+
+
+
+## 2.请求内容
+
+```js
+{
+  method: 'PATCH',
+  url: '/users/',
+  header: {
+    authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjcsInVzZXJOYW1lIjoic3NzNSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE2NjY3MTA2OTIsImV4cCI6MTY2Njc5NzA5Mn0.pfebYFF4T-JRjxB4M3L8CZ5AAnhZK5tnvVDgkkzUzYk', 
+    'content-type': 'application/json',
+    'user-agent': 'PostmanRuntime/7.29.2',
+    accept: '*/*',
+    'cache-control': 'no-cache',
+    'postman-token': 'ffdf5be9-4e00-48f8-80c4-b7f95cba5fb1',
+    host: 'localhost:8000',
+    'accept-encoding': 'gzip, deflate, br',
+    connection: 'keep-alive',
+    'content-length': '26'
+  }
+}
+
+```
+
+## 3.auth验证token中间件
+
+```js
+const  jwt  = require('jsonwebtoken');
+const {JWT_SECRET} = require('../config/config.default')
+const auth = async (ctx, next) => {
+    const {authorization} = ctx.request.header;
+    const token = authorization.replace('Bearer ','')
+    console.log(token)
+    //  验证token
+    try {
+        const user  = jwt.verify(token,JWT_SECRET)
+        console.log(user)
+        ctx.state.user = user
+    } catch (error) {
+          switch (error.name) {
+            case 'TokenExpiredError':
+                console.error('token已经过期', error);
+                ctx.app.emit('error', tokenExpiredError, ctx);
+                return;
+            case 'JsonWebTokenError':
+                console.error('无效的token', error);
+                ctx.app.emit('error', invalidTokenError, ctx);
+                return;
+        }
+    }
+
+    await next();
+};
+
+module.exports = {
+    auth,
+
+};
+```
+
+## 4.user信息为：
+
+```js
+{
+  id: 27,
+  userName: 'sss5',
+  isAdmin: false,
+  iat: 1666710692,
+  exp: 1666797092
+}
+```
+
+## 5.修改密码操作
+
+```js
+async updatePassword (ctx,next) {
+         // 获取请求参数
+         // 1.获取请求中的新密码 携带token
+         const id = ctx.state.user.id
+         const {password} = ctx.request.body
+         // 操作数据库
+         try {
+         const res =  await updateById({id,password})
+         if(res){
+            // 返回对应的结果
+            ctx.body = {
+                code: 0,
+                message: '修改密码成功',
+                result: ''
+            };
+         }
+ 
+         } catch (error) {
+             console.log('修改密码失败', error);
+             ctx.app.emit('error', updatePasswordError, ctx);
+         }
+
+       
+    }
+   
+}
+```
+
+## 6.操作数据库service 方法：
+
+```js
+    async updateById({ id, userName, password, isAdmin }) {
+        
+            const wehreOpt = { id };
+            const newUser = {};
+            userName && Object.assign(newUser, { userName });
+            password && Object.assign(newUser, { password });
+            isAdmin && Object.assign(newUser, { isAdmin });
+            const res = await User.update(newUser, {
+                where: wehreOpt,
+            });
+            console.log(res);
+            return res[0]>0 ? true : false;
+    }
+```
+
+
+
+# 十二、图片上传
+
+**基本逻辑：先验证是否登录、登录后验证是否是管理员、是管理员可以上传、不是的话提示无管理员权限。**
+
+**验证是否登录复用之前的auth方法**
+
+# 1.是否是管理员
+
+```js
+const hadAdminPermission = async (ctx, next) => {
+    try {
+        const {isAdmin} = ctx.state.user
+        console.log(isAdmin);
+        if(!isAdmin){
+            console.error('该用户没有管理员权限',ctx.state.user)
+            ctx.app.emit('error', noAdminPermissionError, ctx);
+        }
+    } catch (error) {
+        console.error("上传图片失败",error)
+        ctx.app.emit('error', uploadPictureError, ctx);
+    }
+
+    await next();
+};
+```
+
+
+
+遇到的问题：https://github.com/koajs/koa-body/issues/171
+
+# [koa-body文件上传ctx.request.files为undefined](https://segmentfault.com/q/1010000017437815)
+
+![](https://files.catbox.moe/w2pvmp.png)
+
+**解决：应该用post请求**
+
+```
+async upload(ctx, next) {
+  
+        try {
+        // 获取请求参数
+        const file = ctx.request.files.file;
+        console.log(file,"***") 
+       // 操作数据库
+       // 返回对应的结果
+         if(file){
+            ctx.body = {
+                code: 0,
+                message: '图片上传成功',
+                result: ''
+            };
+         }
+         else{
+            console.error("上传图片失败");
+            ctx.app.emit('error', uploadPictureError, ctx);
+            return
+         }
+        } catch (error) {
+            console.log(error,"上传图片失败");
+            ctx.app.emit('error', uploadPictureError, ctx);
+            return
+        }
+    }
+```
+
+
+
+```
+PersistentFile {
+  _events: [Object: null prototype] { error: [Function (anonymous)] },
+  _eventsCount: 1,
+  _maxListeners: undefined,
+  lastModifiedDate: 2022-10-26T16:41:03.473Z,
+  filepath: 'D:\\api\\src\\upload\\98ef725fe046f9fe45fbb0100.jpg',
+  newFilename: '98ef725fe046f9fe45fbb0100.jpg',
+  originalFilename: '微信图片_20220710140048.jpg',
+  mimetype: 'image/jpeg',
+  hashAlgorithm: false,
+  size: 7890553,
+  _writeStream: WriteStream {
+    _writableState: WritableState {
+      objectMode: false,
+      highWaterMark: 16384,
+      finalCalled: true,
+      needDrain: true,
+      ending: true,
+      ended: true,
+      finished: true,
+      destroyed: true,
+      decodeStrings: true,
+      defaultEncoding: 'utf8',
+      length: 0,
+      writing: false,
+      corked: 0,
+      sync: false,
+      bufferProcessing: false,
+      onwrite: [Function: bound onwrite],
+      writecb: null,
+      writelen: 0,
+      afterWriteTickInfo: null,
+      buffered: [],
+      bufferedIndex: 0,
+      allBuffers: true,
+      allNoop: true,
+      pendingcb: 0,
+      prefinished: true,
+      errorEmitted: false,
+      emitClose: true,
+      autoDestroy: true,
+      errored: null,
+      closed: false
+    },
+    _events: [Object: null prototype] { error: [Function (anonymous)] },
+    _eventsCount: 1,
+    _maxListeners: undefined,
+    path: 'D:\\api\\src\\upload\\98ef725fe046f9fe45fbb0100.jpg',
+    fd: null,
+    flags: 'w',
+    mode: 438,
+    start: undefined,
+    autoClose: true,
+    pos: undefined,
+    bytesWritten: 7890553,
+    closed: false,
+    [Symbol(kFs)]: {
+      appendFile: [Function: appendFile],
+      appendFileSync: [Function: appendFileSync],
+      access: [Function: access],
+      accessSync: [Function: accessSync],
+      chown: [Function: chown],
+      chownSync: [Function: chownSync],
+      chmod: [Function: chmod],
+      chmodSync: [Function: chmodSync],
+      close: [Function: close],
+      closeSync: [Function: closeSync],
+      copyFile: [Function: copyFile],
+      copyFileSync: [Function: copyFileSync],
+      createReadStream: [Function: createReadStream],
+      createWriteStream: [Function: createWriteStream],
+      exists: [Function: exists],
+      existsSync: [Function: existsSync],
+      fchown: [Function: fchown],
+      fchownSync: [Function: fchownSync],
+      fchmod: [Function: fchmod],
+      fchmodSync: [Function: fchmodSync],
+      fdatasync: [Function: fdatasync],
+      fdatasyncSync: [Function: fdatasyncSync],
+      fstat: [Function: fstat],
+      fstatSync: [Function: fstatSync],
+      fsync: [Function: fsync],
+      fsyncSync: [Function: fsyncSync],
+      ftruncate: [Function: ftruncate],
+      ftruncateSync: [Function: ftruncateSync],
+      futimes: [Function: futimes],
+      futimesSync: [Function: futimesSync],
+      lchown: [Function: lchown],
+      lchownSync: [Function: lchownSync],
+      lchmod: undefined,
+      lchmodSync: undefined,
+      link: [Function: link],
+      linkSync: [Function: linkSync],
+      lstat: [Function: lstat],
+      lstatSync: [Function: lstatSync],
+      lutimes: [Function: lutimes],
+      lutimesSync: [Function: lutimesSync],
+      mkdir: [Function: mkdir],
+      mkdirSync: [Function: mkdirSync],
+      mkdtemp: [Function: mkdtemp],
+      mkdtempSync: [Function: mkdtempSync],
+      open: [Function: open],
+      openSync: [Function: openSync],
+      opendir: [Function: opendir],
+      opendirSync: [Function: opendirSync],
+      readdir: [Function: readdir],
+      readdirSync: [Function: readdirSync],
+      read: [Function: read],
+      readSync: [Function: readSync],
+      readv: [Function: readv],
+      readvSync: [Function: readvSync],
+      readFile: [Function: readFile],
+      readFileSync: [Function: readFileSync],
+      readlink: [Function: readlink],
+      readlinkSync: [Function: readlinkSync],
+      realpath: [Function],
+      realpathSync: [Function],
+      rename: [Function: rename],
+      renameSync: [Function: renameSync],
+      rm: [Function: rm],
+      rmSync: [Function: rmSync],
+      R_OK: 4,
+      W_OK: 2,
+      X_OK: 1,
+      constants: [Object: null prototype],
+      promises: [Getter]
+    },
+    [Symbol(kCapture)]: false,
+    [Symbol(kIsPerformingIO)]: false
+  },
+  hash: null,
+  [Symbol(kCapture)]: false
+} ***
+```
+
