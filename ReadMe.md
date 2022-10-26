@@ -838,7 +838,7 @@ async updatePassword (ctx,next) {
 
 **验证是否登录复用之前的auth方法**
 
-# 1.是否是管理员
+## 1.是否是管理员
 
 ```js
 const hadAdminPermission = async (ctx, next) => {
@@ -860,15 +860,17 @@ const hadAdminPermission = async (ctx, next) => {
 
 
 
-遇到的问题：https://github.com/koajs/koa-body/issues/171
+## 2.遇到的问题：
 
-# [koa-body文件上传ctx.request.files为undefined](https://segmentfault.com/q/1010000017437815)
+https://github.com/koajs/koa-body/issues/171
+
+[koa-body文件上传ctx.request.files为undefined](https://segmentfault.com/q/1010000017437815)
 
 ![](https://files.catbox.moe/w2pvmp.png)
 
 **解决：应该用post请求**
 
-```
+```js
 async upload(ctx, next) {
   
         try {
@@ -897,7 +899,7 @@ async upload(ctx, next) {
     }
 ```
 
-
+## 3.file的输出结果：
 
 ```
 PersistentFile {
@@ -1034,4 +1036,62 @@ PersistentFile {
   [Symbol(kCapture)]: false
 } ***
 ```
+
+十三、指定静态资源文件夹
+
+[koa-static - npm (npmjs.com)](https://www.npmjs.com/package/koa-static)
+
+```js
+const path = require('path')
+const Koa = require('koa');
+const app = new Koa();
+const koaBody = require('koa-body');
+const koaStatic = require('koa-static');
+app.use(koaBody(
+    {
+        multipart:true,
+        // 配置选项不推荐使用相对路径
+        // 在option里的相对路径，不是相对的当前文件，相对process.cwd()
+        formidable:{
+            uploadDir:path.join(__dirname,'../upload'),
+            keepExtensions:true,
+        }
+    }
+));// 需要在最上层
+console.log(path.join(__dirname,'../upload'),"*****************")//D:\api\src\upload *****************
+app.use(koaStatic(path.join(__dirname,'../upload')))
+// 处理错误的函数
+const errHandler = require('./errHandler')
+const router = require('../router/index')
+
+app.use(router.routes())
+app.use(router.allowedMethods())
+// const userRouter = require('../router/user.route')
+// app.use(userRouter.routes());
+// const goodRouter = require('../router/good.route')
+// app.use(goodRouter.routes());
+
+// 统一处理错误
+app.on('error',errHandler)
+
+module.exports = app
+```
+
+访问：
+
+```
+{
+    "code": 0,
+    "message": "图片上传成功",
+    "result": {
+        "good_img": "f497c30c6639edbeb1fd2ef03.jpg"
+    }
+}
+```
+
+
+
+http://localhost:8000/指定资源文件夹下的文件名：
+
+(http://localhost:8000/f497c30c6639edbeb1fd2ef00.jpg)`
 
