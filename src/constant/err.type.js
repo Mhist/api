@@ -63,6 +63,24 @@ module.exports = {
         code:'10104',
         message:'上传图片失败',
         result:''
+    },
+
+    unSupportFileTypeError:{
+        code:'10105',
+        message:'不支持的文件类型、只支持jpeg、jpg、png格式',
+        result:''
+    },
+
+    postGoodError:{
+        code:'10106',
+        message:'发布商品失败',
+        result:''
+    },
+
+    goodFormateError:{
+        code:'10107',
+        message:'商品参数格式错误',
+        result:''
     }
 
 

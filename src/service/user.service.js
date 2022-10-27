@@ -8,7 +8,6 @@ class userService {
             userName: userName,
             password: password,
         });
-        console.log(res);
 
         return res.dataValues;
     }
@@ -38,7 +37,6 @@ class userService {
             const res = await User.update(newUser, {
                 where: wehreOpt,
             });
-            console.log(res);
             return res[0]>0 ? true : false;
     }
 }

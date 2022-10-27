@@ -1037,7 +1037,7 @@ PersistentFile {
 } ***
 ```
 
-十三、指定静态资源文件夹
+# 十三、指定静态资源文件夹
 
 [koa-static - npm (npmjs.com)](https://www.npmjs.com/package/koa-static)
 
@@ -1094,4 +1094,10 @@ module.exports = app
 http://localhost:8000/指定资源文件夹下的文件名：
 
 (http://localhost:8000/f497c30c6639edbeb1fd2ef00.jpg)`
+
+
+
+# 十四、发布商品
+
+## 1.参数校验
 

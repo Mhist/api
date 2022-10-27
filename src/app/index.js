@@ -1,5 +1,6 @@
 const path = require('path')
 const Koa = require('koa');
+const parameter = require('koa-parameter');
 const app = new Koa();
 const koaBody = require('koa-body');
 const koaStatic = require('koa-static');
@@ -14,8 +15,10 @@ app.use(koaBody(
         }
     }
 ));// 需要在最上层
-console.log(path.join(__dirname,'../upload'),"*****************")//D:\api\src\upload *****************
-app.use(koaStatic(path.join(__dirname,'../upload')))
+parameter(app); // add verifyParams method, but don't add middleware to catch the error
+// app.use(parameter(app)); // also add a middleware to catch the error.
+
+app.use(koaStatic(path.join(__dirname,'../upload')))//D:\api\src\upload *****************
 // 处理错误的函数
 const errHandler = require('./errHandler')
 const router = require('../router/index')
