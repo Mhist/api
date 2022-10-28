@@ -1,6 +1,6 @@
 const Path = require('path')
-const { uploadPictureError,unSupportFileTypeError,postGoodError } = require('../constant/err.type');
-const { createGood } = require('../service/good.service')
+const { uploadPictureError,unSupportFileTypeError,postGoodError,updateGoodError,invalidGoodIdError,deleteGoodError } = require('../constant/err.type');
+const { createGood,updateGoodById,removeGood,restoreGoodById } = require('../service/good.service')
 class goodController {
     async upload(ctx, next) {
         try {
@@ -53,6 +53,75 @@ class goodController {
                 return
             }
         }
+
+    async updateGood(ctx,next){
+        try {
+            const res = await updateGoodById(ctx.params.id,ctx.request.body)
+           if(res){
+            ctx.body = {
+                code: 0,
+                message: '修改商品成功',
+                result: ''
+            };
+           }
+           else{
+            ctx.app.emit('error', invalidGoodIdError, ctx);
+            return
+           }
+            } catch (error) {
+                console.error(error,"修改商品失败");
+                ctx.app.emit('error', updateGoodError, ctx);
+                return
+            }
+        }
+
+    async deleteGood(ctx,next){
+        try {
+        const res = await removeGood(ctx.params.id)
+        console.log(res)
+         if(res){
+            ctx.body = {
+                code: 0,
+                message: '删除商品成功',
+                result: ''
+            };
+         }else{
+            console.error("商品id不存在");
+            ctx.app.emit('error', invalidGoodIdError, ctx);
+            return
+         }
+        } catch (error) {
+            console.error(error,"删除商品失败");
+            ctx.app.emit('error', deleteGoodError, ctx);
+            return
+        }
     }
+
+    
+    async restoreGood(ctx,next){
+        try {
+        const res = await restoreGoodById(ctx.params.id)
+        console.log(res)
+         if(res){
+            ctx.body = {
+                code: 0,
+                message: '上架商品成功',
+                result: ''
+            };
+         }else{
+            console.error("商品id不存在");
+            ctx.app.emit('error', invalidGoodIdError, ctx);
+            return
+         }
+        } catch (error) {
+            console.error(error,"上架商品失败");
+            ctx.app.emit('error', deleteGoodError, ctx);
+            return
+        }
+    }
+
+
+}
+
 
 module.exports = new goodController();

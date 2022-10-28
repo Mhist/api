@@ -1101,3 +1101,50 @@ http://localhost:8000/指定资源文件夹下的文件名：
 
 ## 1.参数校验
 
+**koa-parameter**
+
+1. 初步：**koa-parameter**
+
+```js
+const {goodFormateError} = require('../constant/err.type')
+const paramValidator = async (ctx, next) => {
+    try {
+    ctx.verifyParams({
+        goodName: {
+            type:'string',
+            required: true
+        },
+        goodPrice: {
+            type:'number',
+            required: true
+        },
+        goodNum: {
+            type:'number',
+            required: true
+        },
+        goodImg: {
+            type:'string',
+            required: true
+        },
+
+
+      });
+     
+    } catch (error) {
+      console.error(error)
+      goodFormateError.result = error
+      ctx.app.emit('error', goodFormateError, ctx);
+      return
+    }
+
+    await next();
+};
+
+
+
+module.exports = {
+    paramValidator,
+};
+
+```
+

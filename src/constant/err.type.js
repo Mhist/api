@@ -81,6 +81,24 @@ module.exports = {
         code:'10107',
         message:'商品参数格式错误',
         result:''
+    },
+
+    updateGoodError:{
+        code:'10108',
+        message:'修改商品失败',
+        result:''
+    },
+
+    invalidGoodIdError:{
+        code:'10109',
+        message:'商品id不存在',
+        result:'' 
+    },
+
+    deleteGoodError:{
+        code:'10110',
+        message:'删除商品失败',
+        result:'' 
     }
 
 

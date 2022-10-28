@@ -27,6 +27,10 @@ const Good = sequelize.define('husi_good', {
 
 }, {
   // 这是其他模型参数
+  paranoid: true,
+
+  // 如果要为 deletedAt 列指定自定义名称
+  deletedAt: 'destroyTime'
 });
 
 // `sequelize.define` 会返回模型
