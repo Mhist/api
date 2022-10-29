@@ -21,5 +21,19 @@ class goodService {
         const res = await Good.restore({where:{id}})
         return res>0 ? true : false;
     }
+
+    async findAllGoodList(pageNum,pageSize){
+        const offset = (pageNum-1)*pageSize
+        const {count,rows} = await Good.findAndCountAll({
+            offset:offset,
+            limit:pageSize*1
+        });
+        return {
+            pageNum,
+            pageSize,
+            total:count||0,
+            rows
+        }
+    }  
 }
 module.exports = new goodService();

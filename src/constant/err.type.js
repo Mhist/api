@@ -99,6 +99,12 @@ module.exports = {
         code:'10110',
         message:'删除商品失败',
         result:'' 
+    },
+
+    getGoodListError:{
+        code:'10111',
+        message:'获取商品列表失败',
+        result:'' 
     }
 
 
