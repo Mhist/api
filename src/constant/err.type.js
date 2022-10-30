@@ -105,6 +105,12 @@ module.exports = {
         code:'10111',
         message:'获取商品列表失败',
         result:'' 
+    },
+
+    addToCartError:{
+        code:'10201',
+        message:'添加到购物车失败',
+        result:'' 
     }
 
 
