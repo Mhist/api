@@ -183,6 +183,28 @@ module.exports = {
         code:'10406',
         message:'设置默认地址失败',
         result:''
+    },
+    addOrderError:{
+        code:'10501',
+        message:'生成订单失败',
+        result:''
+    },
+    getOrderListError:{
+        code:'10502',
+        message:'获取订单列表失败',
+        result:''
+    },
+    
+    editOrderError:{
+        code:'10503',
+        message:'更新订单失败',
+        result:''
+    },
+
+    orderFormatError:{
+        code:'10504',
+        message:'订单数据格式错误',
+        result:''
     }
 
 
