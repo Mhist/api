@@ -95,6 +95,7 @@ module.exports = {
         result:'' 
     },
 
+
     deleteGoodError:{
         code:'10110',
         message:'删除商品失败',
@@ -110,6 +111,41 @@ module.exports = {
     addToCartError:{
         code:'10201',
         message:'添加到购物车失败',
+        result:'' 
+    },
+
+    getCartListError:{
+        code:'10202',
+        message:'获取购物车列表失败',
+        result:'' 
+    },
+
+    updateCartError:{
+        code:'10203',
+        message:'更新购物车列表失败',
+        result:'' 
+    },
+    cartFormatError:{
+        code:'10301',
+        message:'购物车数据格式错误',
+        result:'' 
+    },
+
+    deleteCartError:{
+        code:'10302',
+        message:'删除购物车失败',
+        result:'' 
+    },
+
+    selectCartError:{
+        code:'10303',
+        message:'全选购物车失败',
+        result:'' 
+    },
+
+    unSelectCartError:{
+        code:'10304',
+        message:'全不选购物车失败',
         result:'' 
     }
 

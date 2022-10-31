@@ -57,7 +57,6 @@ const verifyLogin = async (ctx, next) => {
     try {
         // 1.判断用户是否存在，不存在就报错
         const res = await getUserInfo({ userName });
-        console.log(res, '***************');
      
         if (!res) {
             console.log('用户名不存在', { userName });

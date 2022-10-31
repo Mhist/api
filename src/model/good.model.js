@@ -33,8 +33,6 @@ const Good = sequelize.define('husi_good', {
   deletedAt: 'destroyTime'
 });
 
-// `sequelize.define` 会返回模型
-// console.log(Good === sequelize.models.Good); // true
 
 
 // Good.sync({ force: true });

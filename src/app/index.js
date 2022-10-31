@@ -12,7 +12,9 @@ app.use(koaBody(
         formidable:{
             uploadDir:path.join(__dirname,'../upload'),
             keepExtensions:true,
-        }
+           
+        },
+        parsedMethods:['POST','PUT','PATCH','DELETE']
     }
 ));// 需要在最上层
 parameter(app); // add verifyParams method, but don't add middleware to catch the error

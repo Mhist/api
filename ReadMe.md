@@ -1058,7 +1058,7 @@ app.use(koaBody(
         }
     }
 ));// 需要在最上层
-console.log(path.join(__dirname,'../upload'),"*****************")//D:\api\src\upload *****************
+
 app.use(koaStatic(path.join(__dirname,'../upload')))
 // 处理错误的函数
 const errHandler = require('./errHandler')
