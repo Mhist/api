@@ -1,12 +1,12 @@
-const {cartFormatError} = require('../constant/err.type')
-const validator = (rules)=>{
+const {addressFormatError} = require('../constant/err.type')
+const validatorAddress = (rules)=>{
     return async(ctx,next)=>{
         try {
             ctx.verifyParams(rules);
             } catch (error) {
               console.error(error)
-              cartFormatError.result = error
-              ctx.app.emit('error', cartFormatError, ctx);
+              addressFormatError.result = error
+              ctx.app.emit('error', addressFormatError, ctx);
               return
             }
         
@@ -14,5 +14,5 @@ const validator = (rules)=>{
     }
 }
 module.exports = {
-    validator
+    validatorAddress
 }

@@ -147,7 +147,44 @@ module.exports = {
         code:'10304',
         message:'全不选购物车失败',
         result:'' 
+    },
+
+    addAddressError:{
+        code:'10401',
+        message:'添加地址失败',
+        result:'' 
+    },
+
+    addressFormatError:{
+        code:'10402',
+        message:'地址数据格式错误',
+        result:''
+    },
+
+    getAddressListError:{
+        code:'10403',
+        message:'获取地址列表失败',
+        result:''
+    },
+
+    editAddressError:{
+        code:'10404',
+        message:'修改地址失败',
+        result:''
+    },
+
+    deleteAddressError:{
+        code:'10405',
+        message:'删除地址失败',
+        result:''
+    },
+
+    setDefaultAddressError:{
+        code:'10406',
+        message:'设置默认地址失败',
+        result:''
     }
+
 
 
 
