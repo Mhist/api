@@ -10,5 +10,12 @@ router.post("/register",userValidator,verifyUser,craptPassword,register)
 router.post("/login",userValidator,verifyLogin,login)
 // 修改密码接口
 router.patch("/",auth,craptPassword,updatePassword)
-
+// 测试连接
+router.get("/test",async ctx =>{
+    ctx.body = {
+        code:0,
+        message:"测试连接成功",
+        result:''
+    }
+})
 module.exports = router

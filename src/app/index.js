@@ -4,6 +4,7 @@ const parameter = require('koa-parameter');
 const app = new Koa();
 const koaBody = require('koa-body');
 const koaStatic = require('koa-static');
+const cors = require('koa2-cors');
 app.use(koaBody(
     {
         multipart:true,
@@ -27,6 +28,8 @@ const router = require('../router/index')
 
 app.use(router.routes())
 app.use(router.allowedMethods())
+
+app.use(cors());
 // const userRouter = require('../router/user.route')
 // app.use(userRouter.routes());
 // const goodRouter = require('../router/good.route')
