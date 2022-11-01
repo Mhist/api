@@ -1148,3 +1148,100 @@ module.exports = {
 
 ```
 
+# 一、什么是nginx?
+
+Nginx是俄罗斯人Igor Sysoev编写的轻量级Web服务器，它的发音为 [ˈendʒɪnks] ，它不仅是一个高性能的HTTP和反向代理服务器，同时也是一个IMAP/POP3/SMTP 代理服务器。
+
+截至2019年12月，差不多世界上每3个网站中就有1个使用Nginx。
+
+Nginx以事件驱动的方式编写，所以有非常好的性能，同时也是一个非常高效的反向代理、负载平衡服务器。在性能上，Nginx占用很少的系统资源，能支持更多的并发连接，达到更高的访问效率；在功能上，Nginx是优秀的代理服务器和负载均衡服务器；在安装配置上，Nginx安装简单、配置灵活。
+
+Nginx支持热部署，启动速度特别快，还可以在不间断服务的情况下对软件版本或配置进行升级，即使运行数月也无需重新启动。
+
+在微服务的体系之下，Nginx正在被越来越多的项目采用作为网关来使用，配合Lua做限流、熔断等控制。
+
+
+
+# 二、部署项目的基本流程
+
+
+
+![](https://files.catbox.moe/iqynp7.jpg)
+
+
+
+项目的源码地址为：[https://github.com/Mhist/api](https://github.com/Mhist/api)
+
+# 将文件上传至宝塔面板：
+
+![](https://files.catbox.moe/wztgm5.png)
+
+通过**npm i**安装依赖
+
+并且通过pm2 启动项目
+
+```bash
+pm2 start src/main.js 
+```
+
+![](https://files.catbox.moe/d6bzu4.jpg)
+
+## 配置代理的大概原理：
+
+![](https://files.catbox.moe/6osaoz.png)
+
+```js
+server
+    {
+        listen 80;
+        server_name localhost;
+        index index.html index.htm index.php;
+        root  /www/server/phpmyadmin;
+
+        #error_page   404   /404.html;
+        include enable-php.conf;
+        
+        location / {
+          proxy_pass http://localhost:8666;
+        }
+        
+        location ~ .*\.(gif|jpg|jpeg|png|bmp|swf)$
+        {
+            expires      30d;
+        }
+
+        location ~ .*\.(js|css)?$
+        {
+            expires      12h;
+        }
+
+        location ~ /\.
+        {
+            deny all;
+        }
+
+        access_log  /www/wwwlogs/access.log;
+    }
+```
+
+## 修改部分：
+
+>  listen 80;
+>         server_name localhost;
+>
+>  location / {
+>           proxy_pass http://localhost:8666;
+>         }
+
+
+
+修改env中的端口号：本地8000 线上是8666
+
+修改数据库用户名 本地是root 线上是admin
+
+保持mysql版本一致，本地是8.0；线上也需要是8.0，model文件中的强制建表语句取消注释运行一遍建表语句、然后重新注释掉。
+
+# 接口文档地址
+koa2_husi项目
+https://www.apifox.cn/apidoc/shared-5bd98502-7911-48ee-9428-1fecdf8dd35d/api-47064905
+
