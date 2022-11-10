@@ -76,6 +76,35 @@ class userController {
 
        
     }
+
+
+    async getUserDetail(ctx){
+         try {
+       // token解析用户信息
+       const authorization =  ctx.request.headers.authorization
+       const token = authorization.replace("Bearer ",'')
+       // get the decoded payload ignoring signature, no secretOrPrivateKey needed
+        let decoded = jwt.decode(token);
+        const {userName} = decoded
+       const { password, ...res } = await getUserInfo({ userName });
+       console.log(res)//{ id: 27, userName: 'sss5', isAdmin: false }
+        // 操作数据库
+        // 返回对应的结果
+        ctx.body = {
+            code: 0,
+            message: '获取用户信息成功',
+            result: res
+        };
+        //  if(res){
+            
+         
+        //  }
+ 
+         } catch (error) {
+             console.log('获取用户信息失败', error);
+             ctx.app.emit('error', getUserInfoError, ctx);
+         }
+    }
    
 }
 

@@ -35,11 +35,6 @@ app.use(router.allowedMethods())
 // app.use(userRouter.routes());
 // const goodRouter = require('../router/good.route')
 // app.use(goodRouter.routes());
-
-
-
-
-
 // 统一处理错误
 app.on('error',errHandler)
 

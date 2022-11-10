@@ -28,6 +28,11 @@ module.exports = {
         message:'用户登录错误',
         result:''
     },
+    getUserInfoError:{
+        code:'10505',
+        message:'获取用户信息失败',
+        result:''
+    },
 
     invalidPasswordError:{
         code:'10006',
@@ -205,7 +210,9 @@ module.exports = {
         code:'10504',
         message:'订单数据格式错误',
         result:''
-    }
+    },
+
+
 
 
 
